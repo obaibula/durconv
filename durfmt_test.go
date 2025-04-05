@@ -40,6 +40,26 @@ func TestString(t *testing.T) {
 			dur:  100*durfmt.Year + 12*durfmt.Week + 500*durfmt.Minute + durfmt.Second,
 			want: "100y-12w-500m-1s",
 		},
+		{
+			fmt:  "m/s/ms/us/ns",
+			dur:  durfmt.Minute + 5*durfmt.Second + 999*durfmt.Millisecond + 11*durfmt.Microsecond + 500*durfmt.Nanosecond,
+			want: "1m/5s/999ms/11us/500ns",
+		},
+		{
+			fmt:  "ms---ns---s---m",
+			dur:  321321*durfmt.Minute + 5*durfmt.Second + 51*durfmt.Millisecond + 13*durfmt.Nanosecond,
+			want: "51ms---13ns---5s---321321m",
+		},
+		{
+			fmt:  "*s*",
+			dur:  10 * durfmt.Second,
+			want: "*10s*",
+		},
+		{
+			fmt:  "%m",
+			dur:  10 * durfmt.Minute,
+			want: "%10m",
+		},
 	}
 
 	for _, tt := range tests {
