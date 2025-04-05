@@ -23,25 +23,22 @@ func TestString(t *testing.T) {
 			want: "4d-4h",
 		},
 		{
-			name:       "Invalid precedense h-d",
-			fmt:        "h-d",
-			wantErrMsg: "invalid precedense",
+			name: "Valid h-d",
+			fmt:  "h-d",
+			dur:  50*durfmt.Day + 4*durfmt.Hour,
+			want: "4h-50d",
 		},
 		{
-			name: "Valid M-d-h",
-			fmt:  "m-d-h",
+			name: "Valid M_d_h",
+			fmt:  "M_d_h",
 			dur:  5*durfmt.Month + 30*durfmt.Day + durfmt.Hour,
-			want: "5m-30d-1h",
+			want: "5M_30d_1h",
 		},
 		{
-			name:       "Invalid precedense d-h-m",
-			fmt:        "d-h-m",
-			wantErrMsg: "invalid precedense",
-		},
-		{
-			name:       "Invalid precedense h-d-m",
-			fmt:        "h-d-m",
-			wantErrMsg: "invalid precedense",
+			name: "Valid h-d-M",
+			fmt:  "h-d-M",
+			dur:  500*durfmt.Month + durfmt.Day + 12*durfmt.Hour,
+			want: "12h-1d-500M",
 		},
 	}
 

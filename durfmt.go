@@ -1,10 +1,9 @@
 package durfmt
 
 import (
-	"errors"
-	"math"
+	"bytes"
+	"slices"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -21,52 +20,25 @@ const (
 	Year                      = 8766 * Hour // 365.25 days
 )
 
-var precedenseMap = map[rune]int{
-	'h': 1,
-	'd': 2,
-	'm': 3,
+const layoutTokens = "Mdh"
+
+var layoutDurMap = map[rune]time.Duration{
+	'h': Hour,
+	'd': Day,
+	'M': Month,
 }
 
 func String(layout string, dur time.Duration) (string, error) {
-	var b strings.Builder
-	prec := math.MaxInt
-	for _, r := range layout {
-		switch r {
-		case 'h':
-			err := validatePrecedense(r, &prec)
-			if err != nil {
-				return "", err
-			}
-			h := dur / Hour
-			dur %= Hour
-			b.WriteString(strconv.FormatInt(int64(h), 10))
-		case 'd':
-			err := validatePrecedense(r, &prec)
-			if err != nil {
-				return "", err
-			}
-			d := dur / Day
-			dur %= Day
-			b.WriteString(strconv.FormatInt(int64(d), 10))
-		case 'm':
-			err := validatePrecedense(r, &prec)
-			if err != nil {
-				return "", err
-			}
-			m := dur / Month
-			dur %= Month
-			b.WriteString(strconv.FormatInt(int64(m), 10))
+	buf := []byte(layout)
+	for _, r := range layoutTokens {
+		i := bytes.IndexRune(buf, r)
+		if i == -1 {
+			continue
 		}
-		b.WriteRune(r)
+		n := dur / layoutDurMap[r]
+		dur %= layoutDurMap[r]
+		conc := strconv.FormatInt(int64(n), 10)
+		buf = slices.Insert(buf, i, []byte(conc)...)
 	}
-	return b.String(), nil
-}
-
-func validatePrecedense(r rune, prec *int) error {
-	rI := precedenseMap[r]
-	if rI > *prec {
-		return errors.New("invalid precedense")
-	}
-	*prec = rI
-	return nil
+	return string(buf), nil
 }
