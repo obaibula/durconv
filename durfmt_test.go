@@ -10,40 +10,40 @@ import (
 
 func TestString(t *testing.T) {
 	tests := []struct {
-		name       string
 		fmt        string
 		dur        time.Duration
 		want       string
 		wantErrMsg string
 	}{
 		{
-			name: "Valid d-h",
 			fmt:  "d-h",
 			dur:  4*durfmt.Day + 4*durfmt.Hour,
 			want: "4d-4h",
 		},
 		{
-			name: "Valid h-d",
 			fmt:  "h-d",
 			dur:  50*durfmt.Day + 4*durfmt.Hour,
 			want: "4h-50d",
 		},
 		{
-			name: "Valid M_d_h",
 			fmt:  "M_d_h",
 			dur:  5*durfmt.Month + 30*durfmt.Day + durfmt.Hour,
 			want: "5M_30d_1h",
 		},
 		{
-			name: "Valid h-d-M",
 			fmt:  "h-d-M",
 			dur:  500*durfmt.Month + durfmt.Day + 12*durfmt.Hour,
 			want: "12h-1d-500M",
 		},
+		{
+			fmt:  "y-w-m-s",
+			dur:  100*durfmt.Year + 12*durfmt.Week + 500*durfmt.Minute + durfmt.Second,
+			want: "100y-12w-500m-1s",
+		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.fmt, func(t *testing.T) {
 			got, err := durfmt.String(tt.fmt, tt.dur)
 			if tt.wantErrMsg != "" {
 				if err == nil {

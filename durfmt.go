@@ -20,12 +20,16 @@ const (
 	Year                      = 8766 * Hour // 365.25 days
 )
 
-const layoutTokens = "Mdh"
+const layoutTokens = "yMwdhms"
 
 var layoutDurMap = map[rune]time.Duration{
+	's': Second,
+	'm': Minute,
 	'h': Hour,
 	'd': Day,
+	'w': Week,
 	'M': Month,
+	'y': Year,
 }
 
 func String(layout string, dur time.Duration) (string, error) {
