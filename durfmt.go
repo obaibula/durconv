@@ -22,7 +22,7 @@ const (
 
 var (
 	layoutTokens = []string{"y", "M", "w", "d", "h", "m", "s", "ms", "us", "ns"}
-	layoutDurMap = map[string]time.Duration{
+	tokenToDur   = map[string]time.Duration{
 		"ns": Nanosecond,
 		"us": Microsecond,
 		"ms": Millisecond,
@@ -39,48 +39,52 @@ var (
 func String(layout string, dur time.Duration) (string, error) {
 	layoutBytes := []byte(layout)
 	for _, t := range layoutTokens {
-		i := bytes.Index(layoutBytes, []byte(t))
-		if i == -1 {
+		tPos := bytes.Index(layoutBytes, []byte(t))
+		if tPos == -1 {
 			continue
 		}
 
 		switch t {
 		case "m":
-			i = handleMinutes(layoutBytes, i)
+			tPos = resolveMinutesPos(layoutBytes, tPos)
 		case "s":
-			i = handleSeconds(layoutBytes, i)
+			tPos = resolveSecondsPos(layoutBytes, tPos)
 		}
-		if i == -1 {
+		if tPos == -1 {
 			continue
 		}
 
-		unitCount := dur / layoutDurMap[t]
-		dur %= layoutDurMap[t]
+		unitCount := dur / tokenToDur[t]
+		dur %= tokenToDur[t]
 		unitCountStr := strconv.FormatInt(int64(unitCount), 10)
-		layoutBytes = slices.Insert(layoutBytes, i, []byte(unitCountStr)...)
+		layoutBytes = slices.Insert(layoutBytes, tPos, []byte(unitCountStr)...)
 	}
 	return string(layoutBytes), nil
 }
 
-func handleMinutes(layoutBytes []byte, i int) int {
-	if i+1 >= len(layoutBytes) {
-		return i
+func resolveMinutesPos(layoutBytes []byte, tPos int) int {
+	if tPos+1 >= len(layoutBytes) {
+		return tPos
 	}
-	next := layoutBytes[i+1]
-	if next == byte('s') {
-		i = bytes.LastIndexByte(layoutBytes, byte('m'))
+	nextByte := layoutBytes[tPos+1]
+	if nextByte == byte('s') {
+		tPos = bytes.LastIndexByte(layoutBytes, byte('m'))
 	}
-	return i
+	return tPos
 }
 
-func handleSeconds(layoutBytes []byte, i int) int {
-	if i-1 < 0 {
-		return i
+func resolveSecondsPos(layoutBytes []byte, tPos int) int {
+	if tPos-1 < 0 {
+		return tPos
 	}
-	prev := layoutBytes[i-1]
-	if prev == byte('m') || prev == byte('u') || prev == byte('n') {
-		i += bytes.IndexByte(layoutBytes[i+1:], byte('s')) + 1
-		return handleSeconds(layoutBytes, i)
+	prevByte := layoutBytes[tPos-1]
+	if prevByte == byte('m') || prevByte == byte('u') || prevByte == byte('n') {
+		nextSTokenPos := bytes.IndexByte(layoutBytes[tPos+1:], byte('s'))
+		if nextSTokenPos == -1 {
+			return -1
+		}
+		tPos += nextSTokenPos + 1
+		return resolveSecondsPos(layoutBytes, tPos)
 	}
-	return i
+	return tPos
 }

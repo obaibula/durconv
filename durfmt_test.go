@@ -60,6 +60,11 @@ func TestString(t *testing.T) {
 			dur:  10 * durfmt.Minute,
 			want: "%10m",
 		},
+		{
+			fmt:  "w/d/ns",
+			dur:  10 * durfmt.Nanosecond,
+			want: "0w/0d/10ns",
+		},
 	}
 
 	for _, tt := range tests {
